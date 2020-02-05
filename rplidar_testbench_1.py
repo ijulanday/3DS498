@@ -1,10 +1,19 @@
 from rplidar import RPLidar
 import os
-import time 
+import time
 
-data0 = []
-data1 = []
-data2 = []
+#lidar -> lidar unit object; data -> array of data
+def TakeScan(lidar, data):
+    #scan -> a list of tuples (quality, angle, distance)
+    for i, scan in enumerate(lidar.iter_scans()):
+        print('%d: Got %d measurements' % (i, len(scan)))
+        data.append(scan)
+        if i>10:
+            break
+    lidar.set_pwm(400)
+    lidar.stop()
+        
+data = []
 
 lidars = []
 numlidars = 3
@@ -14,7 +23,7 @@ for i in range(0,numlidars):
     lidars.append(RPLidar('/dev/ttyUSB' + str(i)))
     print(lidars[i].get_info())
     print(lidars[i].get_health())
-    lidars[i].set_pwm(300)
+    lidars[i].set_pwm(400)
     time.sleep(3)
 
 time.sleep(.1)
@@ -25,11 +34,14 @@ for i in range(0,5):
     time.sleep(1)
     
 time.sleep(.1)
+
+
+# collect lidar data
 i = 0
 for lidar in lidars:
-    print('lidar'+ str(i) + ': ' + str(lidars[i].get_health()))
-    i += 1
-    time.sleep(1)
+    print('getting data from lidar '+ str(i))
+    TakeScan(lidar, data)
+time.sleep(1)
     
 for i in range(0,5):
     print('.')
@@ -43,5 +55,12 @@ for lidar in lidars:
     time.sleep(0.2)
     lidar.disconnect()
     time.sleep(2.5)
+    
+print('writing data to file...')
+f = open('rplidar_testbench_output.txt', 'w')
+for chunk in data:
+  for scan in chunk:
+    f.write(str(scan[1]) + ',' + str(scan[2]) + '\n')
+f.close()
 
 print('\n\ntestbench complete!')
