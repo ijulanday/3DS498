@@ -28,6 +28,7 @@ POST_SCAN_IDLE_TIME
 
 _startTime
 _xyzPointCloud
+_lidars
 
 ##################################
 #  to-be implemented functions   #
